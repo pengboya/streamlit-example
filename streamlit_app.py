@@ -9,7 +9,7 @@ if 'sid' not in st.session_state:
 
 
 def login():
-    response = requests.post('http://127.0.0.1:5000/login', json={'email': email, 'password': password})
+    response = requests.post('https://www.boyastudio.top/login', json={'email': email, 'password': password})
     receive = response.json()
     st.session_state.sid = receive.get('sid')
     st.session_state.email = receive.get('email')
@@ -17,7 +17,7 @@ def login():
 
 
 def test():
-    response = requests.post('http://127.0.0.1:5000/test', json={'sid': sid, 'email': email, 'code': code})
+    response = requests.post('https://www.boyastudio.top/test', json={'sid': sid, 'email': email, 'code': code})
     receive = response.json()
     st.session_state.candlestick_options = receive.get('candlestick_options')
 
