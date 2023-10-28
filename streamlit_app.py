@@ -1,38 +1,39 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
 import streamlit as st
+import requests
+import json
+from streamlit_echarts import st_echarts
 
-"""
-# Welcome to Streamlit!
-
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
-
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+if 'sid' not in st.session_state:
+    st.session_state.sid = ''
+    st.session_state.chart = None
 
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+def login():
+    response = requests.post('https://www.boyastudio.top/streamlit/login_temp', json={'email': email, 'password': password})
+    receive = response.json()
+    st.session_state.sid = receive.get('sid')
+    st.session_state.email = receive.get('email')
+    st.session_state.username = receive.get('username')
 
-    Point = namedtuple('Point', 'x y')
-    data = []
 
-    points_per_turn = total_points / num_turns
+def test():
+    response = requests.post('https://www.boyastudio.top/streamlit/test', json={'sid': sid, 'email': email, 'code': code})
+    st.session_state.chart = json.loads(response.text)
 
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
 
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+if len(st.session_state.sid) == 0:
+    email = st.text_input('Email:')
+    password = st.text_input('Password:', type='password')
+    st.button('login', on_click=login)
+else:
+    sid = st.session_state.sid
+    email = st.session_state.email
+    name = st.session_state.username
+    st.write('欢迎，' + name)
+    col1, col2 = st.columns(2)
+    with col1:
+        code = st.text_input(label='Code:', label_visibility="collapsed")
+    with col2:
+        st.button('test', on_click=test)
+    if st.session_state.chart is not None:
+        st_echarts(options=st.session_state.chart)
